@@ -2,18 +2,15 @@ package com.doz.collection;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.function.Consumer;
 
 import com.doz.model.Node;
 import org.jetbrains.annotations.NotNull;
 
-public class Graph implements Iterable<Node>{
+public class GraphCreator {
 
     private static final NodeList EMPTY_NODELIST = new NodeList(null, null);
 
@@ -76,59 +73,82 @@ public class Graph implements Iterable<Node>{
 
         for (NodeList list : nodeList.getChildren()) {
             Node childNode = list.getNode();
-            count = applyNestedSetAlgorithm(childNode, count++);
+            count = applyNestedSetAlgorithm(childNode, count);
         }
 
         node.setRightLink(count++);
         return count;
     }
 
-    public Set<Node> getNodesAsNestedSet() {
-        applyNestedSetAlgorithm(rootNode.getNode(), 0);
-        return quickFinder.keySet();
+    private void applyPartialNestedSetAlgorithm(Node parent, Node child) {
+        increaseLinksForNewNodeAndItsParent(quickFinder.get(child));
+
+        quickFinder.keySet()
+                .stream()
+                .filter(node -> node.getRightLink() > parent.getRightLink() && node.getLeftLink() < parent.getRightLink())
+                .forEach(node -> node.setRightLink(node.getRightLink() + 2));
+
+        quickFinder.keySet()
+                .stream()
+                .filter(node -> node.getRightLink() > parent.getRightLink() && node.getLeftLink() > parent.getRightLink())
+                .forEach(node -> {
+                    node.setLeftLink(node.getLeftLink() + 2);
+                    node.setRightLink(node.getRightLink() + 2);
+                });
+    }
+
+    private void applyPartialNestedSetAlgorithm(NodeList nodeList) {
+        NodeList parentNodeList = increaseLinksForNewNodeAndItsParent(nodeList);
+        increaseFollowingNodesLinks(parentNodeList, nodeList);
     }
 
     @NotNull
-    @Override
-    public Iterator<Node> iterator() {
-        return new Iterator<Node>() {
-
-            private NodeList current = rootNode;
-            private int index = 0;
-
-            @Override
-            public boolean hasNext() {
-                return current != null && quickFinder.keySet().size() < index;
-            }
-
-            @Override
-            public Node next() {
-                NodeList nodeList = getNodeListForIndex(index, current);
-
-                return nodeList.getNode();
-            }
-
-            private NodeList getNodeListForIndex(int index, NodeList current) {
-                if (index == 0) {
-                    return current;
-                } else if (index > current.getChildren().size()){
-                   return null;
-                    // return getNodeListForIndex(index - current.getChildren().size(), )
-                } else {
-                    return current.getChildren().get(index);
-                }
-            }
-        };
+    private NodeList increaseLinksForNewNodeAndItsParent(NodeList nodeList) {
+        NodeList parentNodeList = quickFinder.get(nodeList.getParent());
+        Node parent = parentNodeList.getParent();
+        Node node = nodeList.getNode();
+        int index = parentNodeList.getChildren().indexOf(nodeList);
+        if (index > 0) {
+            NodeList precessedNodeList = parentNodeList.getChildren().get(index - 1);
+            Node precessedNode = precessedNodeList.getNode();
+            node.setLeftLink(precessedNode.getLeftLink() + 2);
+            node.setRightLink(precessedNode.getRightLink() + 2);
+        } else {
+            node.setLeftLink(parent.getLeftLink() + 2);
+            node.setRightLink(parent.getRightLink() + 2);
+        }
+        parent.setRightLink(parent.getRightLink() + 2);
+        return parentNodeList;
     }
 
-    @Override
-    public void forEach(Consumer<? super Node> consumer) {
+    private void increaseFollowingNodesLinks(NodeList parentNodeList, NodeList childNodeList) {
+        List<NodeList> children = parentNodeList.getChildren();
+        int index = 0;
 
+        for (; index < children.size(); index++) {
+            NodeList child = children.get(index);
+            if (child == childNodeList) {
+                index++;
+                break;
+            }
+        }
+
+        for (int i = index; i < children.size(); i++) {
+            NodeList child = children.get(i);
+
+        }
+
+
+        /*if (foundChild) {
+            Node node = child.getNode();
+            node.setLeftLink(node.getLeftLink() + 2);
+
+        }*/
     }
 
-    @Override
-    public Spliterator<Node> spliterator() {
-        return null;
+    public Set<Node> getNodesAsNestedSet() {
+        applyNestedSetAlgorithm(rootNode.getNode(), 0);
+        return quickFinder.keySet();
     }
 
     private static class NodeList {
