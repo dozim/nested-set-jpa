@@ -20,18 +20,18 @@ open class NodeService(@Autowired private val nodeRepository: NodeRepository,
 
         nodeHeaderRepository.save(tree)
 
-        val rNode = Node(tree.id)
-        val cNode1 = Node(tree.id)
-        val cNode2 = Node(tree.id)
-        val ccNode1 = Node(tree.id)
-        val ccccNode1 = Node(tree.id)
+        val rootNode = Node(tree.id)
+        val childNode1 = Node(tree.id)
+        val childNode2 = Node(tree.id)
+        val childNode3 = Node(tree.id)
+        val childNode4 = Node(tree.id)
 
         val graph = GraphCreator()
-        graph.addRootNode(rNode)
-        graph.addChildren(rNode, cNode1)
-        graph.addChildren(rNode, cNode2)
-        graph.addChildren(cNode1, ccNode1)
-        graph.addChildren(ccNode1, ccccNode1)
+        graph.addRootNode(rootNode)
+        graph.addChildren(rootNode, childNode1)
+        graph.addChildren(rootNode, childNode2)
+        graph.addChildren(childNode1, childNode3)
+        graph.addChildren(childNode3, childNode4)
 
         tree.addNodes(graph.nodesAsNestedSet)
         nodeHeaderRepository.save(tree)
