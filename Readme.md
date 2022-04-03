@@ -45,4 +45,4 @@ Links:
 - https://en.wikipedia.org/wiki/Nested_set_model
 - https://www.sitepoint.com/hierarchical-data-database-2/
 
-Thanks to: hu.webarticum: tree-printer
+Thanks to: hu.webarticum: tree-printer https://github.com/davidsusu/tree-printer 
