@@ -2,14 +2,13 @@ package com.doz.collection
 
 import com.doz.model.Node
 import com.doz.model.NodeEntity
-import com.doz.model.RootNode
 import java.util.*
 
-class GraphCreatorForNode {
-    private lateinit var rootNode: RootNode
+class GraphCreator {
+    private lateinit var rootNode: Node
 
     fun createRootNode(): Node {
-        rootNode = RootNode("RootNode")
+        rootNode = Node("Root")
         return rootNode
     }
 

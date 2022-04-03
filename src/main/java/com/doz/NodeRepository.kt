@@ -18,8 +18,8 @@ interface NodeRepository : PagingAndSortingRepository<NodeEntity, Long> {
                 "ORDER BY n.leftLink"
     )
     fun findSubTree(
-        @Param("left") leftNum: Long,
-        @Param("right") rightNum: Long,
+        @Param("left") leftNum: Int,
+        @Param("right") rightNum: Int,
         @Param("treeId") treeId: Long
     ): List<NodeEntity>
 
@@ -31,8 +31,8 @@ interface NodeRepository : PagingAndSortingRepository<NodeEntity, Long> {
                 "ORDER BY n.leftLink "
     )
     fun findLeafNodes(
-        @Param("left") leftNum: Long,
-        @Param("right") rightNum: Long,
+        @Param("left") leftNum: Int,
+        @Param("right") rightNum: Int,
         @Param("treeId") treeId: Long
     ): List<NodeEntity>
 
@@ -44,7 +44,7 @@ interface NodeRepository : PagingAndSortingRepository<NodeEntity, Long> {
                 "AND rightLink > :right "
     )
     fun updateAllNodesToRight(
-        @Param("right") rightNum: Long,
+        @Param("right") rightNum: Int,
         @Param("treeId") treeId: Long
     )
 
@@ -54,8 +54,6 @@ interface NodeRepository : PagingAndSortingRepository<NodeEntity, Long> {
                 "AND n.leftLink = 1 "
     )
     fun findRootNode(
-        @Param("left") leftNum: Long,
-        @Param("right") rightNum: Long,
         @Param("treeId") treeId: Long,
         pageable: Pageable
     ): Page<NodeEntity>
@@ -67,8 +65,8 @@ interface NodeRepository : PagingAndSortingRepository<NodeEntity, Long> {
                 "ORDER BY n.leftLink ASC"
     )
     fun findParentNode(
-        @Param("left") leftNum: Long,
-        @Param("right") rightNum: Long,
+        @Param("left") leftNum: Int,
+        @Param("right") rightNum: Int,
         @Param("treeId") treeId: Long,
         pageable: Pageable
     ): Page<NodeEntity>

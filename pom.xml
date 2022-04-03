@@ -23,6 +23,7 @@
 		<java.version>11</java.version>
 		<kotlin.version>1.6.10</kotlin.version>
 		<jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
+		<treePrinterVersion>2.0.0</treePrinterVersion>
 	</properties>
 
 	<dependencies>
@@ -31,9 +32,18 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
 			<version>${jaxb-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>hu.webarticum</groupId>
+			<artifactId>tree-printer</artifactId>
+			<version>${treePrinterVersion}</version>
 		</dependency>
 
 		<dependency>
@@ -62,6 +72,11 @@
             <artifactId>kotlin-reflect</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-maven-allopen</artifactId>
+			<version>${kotlin.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -91,8 +106,18 @@
 					</execution>
 				</executions>
 				<configuration>
+					<compilerPlugins>
+						<plugin>spring</plugin>
+					</compilerPlugins>
 					<jvmTarget>11</jvmTarget>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-maven-allopen</artifactId>
+						<version>${kotlin.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

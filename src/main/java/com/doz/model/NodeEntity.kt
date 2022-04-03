@@ -9,28 +9,33 @@ import javax.persistence.*
    // Index(name = "idx_nodeentity_tree_id_left_unq", columnList = "TREE_ID, LEFT_LINK", unique = true),
    // Index(name = "idx_nodeentity_tree_id_right_unq", columnList = "TREE_ID, RIGHT_LINK", unique = true)
 ])
-open class NodeEntity {
+open class NodeEntity: BasicNode {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "nodeentity_gen")
+    @SequenceGenerator(name = "nodeentity_gen", sequenceName = "nodeentity_seq")
     open var id: Long = 0
 
     @Column(name = "LEFT_LINK", nullable = false)
-    open var leftLink: Int = 0
+    override var leftLink: Int = 0
 
     @Column(name = "RIGHT_LINK", nullable = false)
-    open var rightLink: Int = 0
+    override var rightLink: Int = 0
 
     @Column(name = "depth", nullable = false)
-    open var depth: Int? = null
+    override var depth: Int = 0
+
+    @Column(name = "name", nullable = false)
+    override var name: String = ""
 
     @JoinColumn(name = "TREE_ID", nullable = false, table = "TREE", referencedColumnName = "ID")
     open var treeId: Long = 0
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "node_id")
     open var childNodes: MutableList<NodeEntity> = mutableListOf()
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_node_id")
     open var parentNode: NodeEntity? = null
 

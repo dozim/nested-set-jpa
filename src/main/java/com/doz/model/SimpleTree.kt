@@ -7,7 +7,9 @@ import javax.persistence.*
 class SimpleTree {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "simpletree_gen")
+    @SequenceGenerator(name = "simpletree_gen", sequenceName = "simpletree_seq")
+    @Column(name = "id", nullable = false)
     var id: Long = 0
 
     @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "treeId", orphanRemoval = true)

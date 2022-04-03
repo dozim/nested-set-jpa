@@ -1,52 +1,63 @@
 package com.doz
 
-import com.doz.collection.GraphCreatorForNode
+import com.doz.collection.GraphCreator
+import com.doz.collection.GraphPrinter
 import com.doz.collection.NodeCollector
+import com.doz.model.BasicNode
 import com.doz.model.Node
 import com.doz.model.NodeEntity
 import com.doz.model.SimpleTree
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import javax.annotation.PostConstruct
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.stream.Collectors
+import java.util.stream.IntStream
+import kotlin.random.Random
 
 @Transactional
 @Service
 open class NodeService(
-    @Autowired private val nodeRepository: NodeRepository,
-    @Autowired private val simpleTreeRepository: SimpleTreeRepository
+    private val nodeRepository: NodeRepository,
+    private val simpleTreeRepository: SimpleTreeRepository,
+    private val graphPrinter: GraphPrinter
 ) {
 
-    @PostConstruct
     fun example() {
-
-        val graph = GraphCreatorForNode()
+        val graph = GraphCreator()
         val rootNode = graph.createRootNode()
 
-        val childNode1 = Node("childNode1")
-        val childNode2 = Node("childNode2")
-        val childNode3 = Node("childNode3")
-        val childNode4 = Node("childNode4")
+        createExample(graph, rootNode)
 
-        graph.addChildren(rootNode, childNode1)
-        graph.addChildren(rootNode, childNode2)
-        graph.addChildren(childNode1, childNode3)
-        graph.addChildren(childNode3, childNode4)
+        val nodesAsNestedSet = graph.nodesAsNestedSet()
 
-        val nodesAsNestedSet = graph.nodesAsNestedSet().sortedBy { it.leftLink }
-
-        nodesAsNestedSet.forEach {
-            println("name: ${it.name}")
-            println("parentNode: ${if (it != rootNode) it.parentNode.name else ""}")
-            println("childNodes: ${it.childNodes.joinToString { iter -> iter.name }}")
-            println("left:  ${it.leftLink}")
-            println("right: ${it.rightLink}")
-            println("depth: ${it.depth}")
-            println()
-        }
+        graphPrinter.printAsText(nodesAsNestedSet)
+        graphPrinter.printAsGraph(rootNode as BasicNode)
 
         saveNodes(rootNode)
     }
+
+    fun exampleSubTree() {
+        val findSubTree = nodeRepository.findSubTree(7, 12, 1)
+        val subTreeRoot = findSubTree.minByOrNull { it.leftLink }!!
+        graphPrinter.printAsText(findSubTree)
+        graphPrinter.printAsGraph(subTreeRoot)
+    }
+
+    private fun createExample(graph: GraphCreator, rootNode: Node) {
+        val child1 = Node("Child1")
+        val child2 = Node("Child2")
+        val child3 = Node("Child3")
+        val child4 = Node("Child4")
+        val child5 = Node("Child5")
+        val child6 = Node("Child6")
+
+        graph.addChildren(rootNode, child1)
+        graph.addChildren(rootNode, child2)
+        graph.addChildren(child1, child3)
+        graph.addChildren(child3, child4)
+        graph.addChildren(child2, child5, child6)
+    }
+
 
     fun saveNodes(rootNode: Node) {
         val tree = SimpleTree()
@@ -57,6 +68,7 @@ open class NodeService(
 
         tree.addNodes(allNodes)
         simpleTreeRepository.save(tree)
+        println("Tree was generated with id: ${tree.id} and has ${allNodes.size} Nodes")
     }
 
     private fun transformNode(parent: NodeEntity?, node: Node, tree: SimpleTree): NodeEntity {
@@ -64,10 +76,64 @@ open class NodeService(
             leftLink = node.leftLink
             rightLink = node.rightLink
             depth = node.depth
+            name = node.name
             treeId = tree.id
             parentNode = parent
             childNodes.addAll(node.childNodes.map { transformNode(this, it, tree) })
         }
+    }
+
+    fun printSubTree(left: Int, right: Int, treeId: Long) {
+        val subTree = this.nodeRepository.findSubTree(
+            leftNum = left,
+            rightNum = right,
+            treeId = treeId
+        )
+
+        subTree
+            .sortedBy { it.leftLink }
+            .first()
+            .also { graphPrinter.printAsGraph(it) }
+
+    }
+
+    fun printLeafs(left: Int, right: Int, treeId: Long) {
+        val leafNodes = this.nodeRepository.findLeafNodes(
+            leftNum = left,
+            rightNum = right,
+            treeId = treeId
+        )
+
+        graphPrinter.printAsText(leafNodes)
+    }
+
+    fun createRandomTree() {
+        val maxNodes = Random.nextInt(1, 30)
+        val graph = GraphCreator()
+        val rootNode = graph.createRootNode()
+
+        createRandomTree(AtomicInteger(1), maxNodes, graph, rootNode)
+
+        val nodesAsNestedSet = graph.nodesAsNestedSet()
+
+        graphPrinter.printAsText(nodesAsNestedSet)
+        graphPrinter.printAsGraph(rootNode as BasicNode)
+
+        saveNodes(rootNode)
+    }
+
+    fun createRandomTree(alreadyCreatedNodes: AtomicInteger, maxNodes: Int, graph: GraphCreator, parenNode: Node) {
+        if (alreadyCreatedNodes.get() > maxNodes) return
+
+        val childNodes = IntStream.range(1, Random.nextInt(2, 7)).mapToObj {
+            val node = Node("Node${alreadyCreatedNodes.getAndIncrement()}")
+            graph.addChildren(parenNode, node)
+            node
+        }.collect(Collectors.toList())
+
+        if (alreadyCreatedNodes.get() > maxNodes) return
+
+        childNodes.forEach { createRandomTree(alreadyCreatedNodes, maxNodes, graph, it) }
     }
 
 }

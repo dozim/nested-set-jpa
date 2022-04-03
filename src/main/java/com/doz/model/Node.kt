@@ -1,15 +1,9 @@
 package com.doz.model
 
-open class Node(val name: String) {
+class Node(override var name: String) : BasicNode {
     var childNodes: MutableList<Node> = mutableListOf()
-    open lateinit var parentNode: Node
-    var leftLink: Int = 0
-    var rightLink: Int = 0
-    var depth: Int = 0
-}
-
-class RootNode(name: String) : Node(name) {
-    override var parentNode: Node
-        get() = throw UnsupportedOperationException("RootNode has no parent")
-        set(value) {}
+    var parentNode: Node? = null
+    override var leftLink: Int = 0
+    override var rightLink: Int = 0
+    override var depth: Int = 0
 }
